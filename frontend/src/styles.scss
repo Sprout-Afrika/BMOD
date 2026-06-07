@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  body {
+    @apply bg-bmod-white text-bmod-black font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-bmod-black text-bmod-white px-6 py-3 text-sm font-medium tracking-widest uppercase
+           hover:bg-bmod-accent hover:text-bmod-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply border border-bmod-black text-bmod-black px-6 py-3 text-sm font-medium tracking-widest uppercase
+           hover:bg-bmod-black hover:text-bmod-white transition-colors duration-200;
+  }
+
+  .input-field {
+    @apply w-full border border-bmod-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-bmod-black
+           transition-colors duration-150 bg-transparent;
+  }
+
+  .product-card {
+    @apply cursor-pointer;
+  }
+
+  .product-card img {
+    @apply w-full aspect-[3/4] object-cover transition-opacity duration-200;
+  }
+
+  .product-card:hover img {
+    opacity: 0.9;
+  }
+
+  .badge {
+    @apply inline-block px-2 py-0.5 text-xs font-medium tracking-wider uppercase;
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Recurse \"C:\\\\Users\\\\LENOVO\\\\Downloads\\\\New Folder \\(2\\)\\\\BMOD\" | Where-Object { -not $_.PSIsContainer } | Select-Object -ExpandProperty FullName | Sort-Object | ForEach-Object { $_.Replace\\(\"C:\\\\Users\\\\LENOVO\\\\Downloads\\\\New Folder \\(2\\)\\\\BMOD\\\\\", \"\"\\) })",
+      "Bash(docker exec *)",
+      "Bash(findstr \"\\\\\"@angular\")"
+    ]
+  }
+}
