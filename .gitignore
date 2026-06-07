@@ -25,6 +25,7 @@ npm-debug.log*
 
 # Angular build
 frontend/dist/
+frontend/.angular/cache/
 
 # IDEs
 .idea/

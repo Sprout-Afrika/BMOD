@@ -53,10 +53,10 @@ import { loadCart } from '../../../core/store/cart/cart.actions';
                       <img [src]="item.product.images[0]?.url || 'assets/placeholder.webp'" [alt]="item.product.name" class="h-20 w-16 object-cover sm:h-24 sm:w-20" />
                       <div>
                         <p class="text-sm font-semibold">{{ item.product.name }}</p>
-                        <p class="mt-1 text-xs text-bmod-gray-400">
-                          @if (item.size) { Size {{ item.size }} · }
-                          Qty {{ item.quantity }}
-                        </p>
+                        <div class="mt-1 flex flex-wrap gap-x-2 text-xs text-bmod-gray-400">
+                          @if (item.size) { <span>Size {{ item.size }}</span> }
+                          <span>Qty {{ item.quantity }}</span>
+                        </div>
                       </div>
                       <p class="text-right text-sm font-semibold">{{ item.line_total_ngn | currencyDisplay }}</p>
                     </div>

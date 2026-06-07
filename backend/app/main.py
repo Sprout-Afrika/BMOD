@@ -27,8 +27,9 @@ def _validate_production_settings() -> None:
 
     if settings_cfg.jwt_secret_key in {"insecure-dev-secret-change-me", "change-me-to-a-256-bit-random-string"}:
         raise RuntimeError("JWT_SECRET_KEY must be set to a strong production secret")
-    if not settings_cfg.frontend_origin.startswith("https://"):
-        raise RuntimeError("FRONTEND_ORIGIN must be an https:// origin in production")
+    for origin in _allowed_origins():
+        if not origin.startswith("https://"):
+            raise RuntimeError("FRONTEND_ORIGIN must contain only https:// origins in production")
 
 
 @asynccontextmanager
