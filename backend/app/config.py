@@ -1,4 +1,6 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from functools import lru_cache
 
 
@@ -7,6 +9,24 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "postgresql+asyncpg://bmod:password@localhost:5432/bmod_db"
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        if not isinstance(value, str):
+            return value
+
+        if value.startswith("postgres://"):
+            value = value.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif value.startswith("postgresql://"):
+            value = value.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+        parts = urlsplit(value)
+        if parts.query:
+            query = urlencode([(key, val) for key, val in parse_qsl(parts.query) if key != "sslmode"])
+            value = urlunsplit((parts.scheme, parts.netloc, parts.path, query, parts.fragment))
+
+        return value
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
