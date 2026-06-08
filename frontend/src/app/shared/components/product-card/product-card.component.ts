@@ -11,11 +11,11 @@ import { CurrencyDisplayPipe } from '../../pipes/currency-display.pipe';
   imports: [CommonModule, RouterLink, CurrencyDisplayPipe],
   template: `
     <div class="product-card" [routerLink]="['/shop', product.id]">
-      <div class="relative overflow-hidden bg-bmod-gray-100">
+      <div class="product-image-frame aspect-[3/4]">
         <img
           [src]="product.images[0]?.url || 'assets/placeholder.webp'"
           [alt]="product.images[0]?.alt_text || product.name"
-          class="w-full aspect-[3/4] object-cover group-hover:scale-105 transition-transform duration-500"
+          class="product-image group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
         @if (!product.is_in_stock) {

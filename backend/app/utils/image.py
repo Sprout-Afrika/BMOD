@@ -2,7 +2,7 @@ import io
 import uuid
 import filetype
 import boto3
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, ImageOps, UnidentifiedImageError
 from fastapi import HTTPException, UploadFile, status
 from app.config import get_settings
 
@@ -10,7 +10,7 @@ settings = get_settings()
 
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
-MAX_WIDTH = 800
+MAX_IMAGE_EDGE = 1600
 # Guard against decompression bombs — reject images > 25 MP
 Image.MAX_IMAGE_PIXELS = 25_000_000
 
@@ -25,7 +25,7 @@ def _get_s3_client():
     )
 
 
-async def upload_product_image(file: UploadFile, product_id: uuid.UUID, position: int) -> str:
+async def _read_and_prepare_image(file: UploadFile) -> io.BytesIO:
     raw = await file.read()
 
     if len(raw) > MAX_SIZE_BYTES:
@@ -36,19 +36,34 @@ async def upload_product_image(file: UploadFile, product_id: uuid.UUID, position
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Only JPG, PNG, WebP accepted")
 
     try:
-        img = Image.open(io.BytesIO(raw)).convert("RGB")
+        img = ImageOps.exif_transpose(Image.open(io.BytesIO(raw))).convert("RGB")
     except (UnidentifiedImageError, Exception) as e:
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Invalid image file") from e
 
-    if img.width > MAX_WIDTH:
-        ratio = MAX_WIDTH / img.width
-        img = img.resize((MAX_WIDTH, int(img.height * ratio)), Image.LANCZOS)
+    if max(img.size) > MAX_IMAGE_EDGE:
+        img.thumbnail((MAX_IMAGE_EDGE, MAX_IMAGE_EDGE), Image.LANCZOS)
 
     output = io.BytesIO()
     img.save(output, format="WEBP", quality=85)
     output.seek(0)
+    return output
 
+
+async def upload_product_image(file: UploadFile, product_id: uuid.UUID, position: int) -> str:
+    output = await _read_and_prepare_image(file)
     key = f"products/{product_id}/{position}.webp"
+    await _upload_webp(output, key)
+    return f"{settings.r2_public_url}/{key}"
+
+
+async def upload_site_image(file: UploadFile, image_key: str) -> str:
+    output = await _read_and_prepare_image(file)
+    key = f"site/{image_key}.webp"
+    await _upload_webp(output, key)
+    return f"{settings.r2_public_url}/{key}"
+
+
+async def _upload_webp(output: io.BytesIO, key: str) -> None:
     s3 = _get_s3_client()
     s3.upload_fileobj(
         output,
@@ -56,8 +71,6 @@ async def upload_product_image(file: UploadFile, product_id: uuid.UUID, position
         key,
         ExtraArgs={"ContentType": "image/webp", "CacheControl": "public, max-age=31536000"},
     )
-
-    return f"{settings.r2_public_url}/{key}"
 
 
 async def delete_product_image(product_id: uuid.UUID, position: int) -> None:

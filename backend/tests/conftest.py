@@ -9,7 +9,7 @@ from app.main import app
 from app.database import Base, get_db
 from app.utils.redis_client import close_redis
 
-TEST_DB_URL = os.getenv("TEST_DATABASE_URL", "postgresql+asyncpg://bmod:password@localhost:5432/bmod_test")
+TEST_DB_URL = os.getenv("TEST_DATABASE_URL", "postgresql+asyncpg://bmod:bmod_dev_password@localhost:5432/bmod_test")
 
 engine = create_async_engine(TEST_DB_URL, echo=False, poolclass=NullPool)
 TestSession = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

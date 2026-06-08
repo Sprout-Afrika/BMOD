@@ -33,12 +33,13 @@ import { loadCart } from '../../core/store/cart/cart.actions';
           <div class="flex-1 space-y-4">
             @for (item of cart.items; track item.id) {
               <div class="flex gap-4 border-b border-bmod-gray-200 pb-4">
-                <img
-                  [src]="item.product.images[0]?.url || 'assets/placeholder.webp'"
-                  [alt]="item.product.name"
-                  class="w-20 h-24 object-cover flex-shrink-0"
-                  [routerLink]="['/shop', item.product_id]"
-                />
+                <div class="product-image-frame w-20 h-24 flex-shrink-0" [routerLink]="['/shop', item.product_id]">
+                  <img
+                    [src]="item.product.images[0]?.url || 'assets/placeholder.webp'"
+                    [alt]="item.product.name"
+                    class="product-image"
+                  />
+                </div>
                 <div class="flex-1">
                   <a [routerLink]="['/shop', item.product_id]" class="font-medium hover:text-bmod-accent">
                     {{ item.product.name }}

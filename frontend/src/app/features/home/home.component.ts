@@ -11,7 +11,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   imports: [CommonModule, RouterLink, ProductCardComponent],
   template: `
     <!-- Hero -->
-    <section class="relative bg-bmod-black text-white min-h-[70vh] flex items-center justify-center overflow-hidden">
+    <section class="relative bg-bmod-black text-white min-h-[70vh] flex items-center justify-center overflow-hidden bg-cover bg-center" [style.background-image]="heroBackgroundImage">
       <div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10"></div>
       <div class="relative z-20 text-center px-4">
         <p class="text-bmod-accent text-xs tracking-[0.4em] uppercase mb-4">New Collection</p>
@@ -62,6 +62,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           @for (cat of categories; track cat.label) {
             <a [routerLink]="['/shop']" [queryParams]="{ category: cat.value }"
                class="group relative h-64 bg-bmod-black overflow-hidden flex items-end p-6">
+              <img [src]="getCategoryImage(cat.value)" [alt]="cat.label" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
               <div class="relative z-20">
                 <h3 class="font-display text-white text-2xl font-semibold">{{ cat.label }}</h3>
@@ -91,6 +92,7 @@ export class HomeComponent implements OnInit {
 
   featuredProducts: Product[] = [];
   loading = true;
+  siteSettings: Record<string, string> = {};
 
   categories = [
     { label: 'Clothes', value: 'clothes' },
@@ -103,5 +105,19 @@ export class HomeComponent implements OnInit {
       next: res => { this.featuredProducts = res.items; this.loading = false; },
       error: () => this.loading = false,
     });
+    this.api.getPublicSettings().subscribe({
+      next: res => {
+        this.siteSettings = Object.fromEntries(res.settings.map(setting => [setting.key, setting.value]));
+      },
+    });
+  }
+
+  get heroBackgroundImage(): string {
+    const url = this.siteSettings['hero_banner_url'];
+    return url ? `url("${url}")` : 'none';
+  }
+
+  getCategoryImage(category: string): string {
+    return this.siteSettings[`category_${category}_image_url`] || 'assets/placeholder.webp';
   }
 }

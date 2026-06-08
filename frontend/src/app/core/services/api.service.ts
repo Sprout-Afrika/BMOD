@@ -64,8 +64,18 @@ export class ApiService {
     return this.http.get<{ settings: { key: string; value: string }[] }>(`${this.base}/settings`);
   }
 
+  getPublicSettings(): Observable<{ settings: { key: string; value: string }[] }> {
+    return this.http.get<{ settings: { key: string; value: string }[] }>(`${this.base}/settings/public`);
+  }
+
   updateSetting(key: string, value: string): Observable<{ key: string; value: string }> {
     return this.http.patch<{ key: string; value: string }>(`${this.base}/settings/${key}`, { value });
+  }
+
+  uploadSettingImage(key: string, file: File): Observable<{ key: string; value: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ key: string; value: string }>(`${this.base}/settings/images?key=${key}`, form);
   }
 
   // CMS

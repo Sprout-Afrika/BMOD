@@ -84,9 +84,9 @@ import { Product } from '../../../core/models';
             <label class="block text-xs tracking-widest uppercase mb-3">Product Images (Positions 1, 2, 3)</label>
             <div class="grid grid-cols-3 gap-3">
               @for (pos of [1, 2, 3]; track pos) {
-                <div class="relative border border-dashed border-bmod-gray-200 aspect-[3/4] flex items-center justify-center bg-bmod-gray-100 overflow-hidden">
+                <div class="product-image-frame border border-dashed border-bmod-gray-200 aspect-[3/4] flex items-center justify-center">
                   @if (getImageAtPos(pos)) {
-                    <img [src]="getImageAtPos(pos)" class="w-full h-full object-cover" />
+                    <img [src]="getImageAtPos(pos)" [alt]="product.name + ' image ' + pos" class="product-image" />
                     <button type="button" (click)="deleteImage(pos)" class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1.5 py-0.5">✕</button>
                   } @else {
                     <label class="cursor-pointer text-center p-4">

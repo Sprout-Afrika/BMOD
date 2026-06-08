@@ -29,8 +29,8 @@ import { Router } from '@angular/router';
         <div class="flex flex-col md:flex-row gap-8 lg:gap-16">
           <!-- Image Section -->
           <div class="w-full md:w-1/2">
-            <div class="bg-bmod-gray-100 aspect-[3/4] overflow-hidden mb-3">
-              <img [src]="activeImage" [alt]="product.name" class="w-full h-full object-cover" />
+            <div class="product-image-frame aspect-[3/4] mb-3">
+              <img [src]="activeImage || 'assets/placeholder.webp'" [alt]="product.name" class="product-image" />
             </div>
             <!-- Thumbnails (max 3) -->
             <div class="flex gap-2">
@@ -39,8 +39,8 @@ import { Router } from '@angular/router';
                   (click)="activeImage = img.url"
                   [class.border-bmod-black]="activeImage === img.url"
                   [class.border-bmod-gray-200]="activeImage !== img.url"
-                  class="w-20 h-24 border-2 overflow-hidden flex-shrink-0">
-                  <img [src]="img.url" [alt]="img.alt_text || product.name" class="w-full h-full object-cover" />
+                  class="product-image-frame w-20 h-24 border-2 flex-shrink-0">
+                  <img [src]="img.url" [alt]="img.alt_text || product.name" class="product-image" />
                 </button>
               }
             </div>

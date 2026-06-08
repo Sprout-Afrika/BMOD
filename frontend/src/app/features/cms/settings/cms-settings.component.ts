@@ -43,6 +43,35 @@ import { ApiService } from '../../../core/services/api.service';
           </div>
           <p class="text-xs text-bmod-gray-400 mt-2">All checkout messages are sent to this number</p>
         </div>
+
+        <div class="border border-bmod-gray-200 p-6">
+          <h2 class="font-semibold mb-4">Homepage Banner</h2>
+          <div class="product-image-frame aspect-[16/7] mb-4">
+            <img [src]="getSettingValue('hero_banner_url') || 'assets/placeholder.webp'" alt="Homepage banner preview" class="product-image" />
+          </div>
+          <label class="btn-outline inline-block cursor-pointer">
+            Upload Banner
+            <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" (change)="uploadImage($event, 'hero_banner_url')" />
+          </label>
+        </div>
+
+        <div class="border border-bmod-gray-200 p-6">
+          <h2 class="font-semibold mb-4">Category Images</h2>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            @for (item of categoryImageSettings; track item.key) {
+              <div>
+                <p class="mb-2 text-xs uppercase tracking-widest text-bmod-gray-400">{{ item.label }}</p>
+                <div class="product-image-frame aspect-[4/3] mb-3">
+                  <img [src]="getSettingValue(item.key) || 'assets/placeholder.webp'" [alt]="item.label + ' preview'" class="product-image" />
+                </div>
+                <label class="text-xs underline cursor-pointer">
+                  Upload
+                  <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" (change)="uploadImage($event, item.key)" />
+                </label>
+              </div>
+            }
+          </div>
+        </div>
       </form>
     </div>
   `,
@@ -56,12 +85,19 @@ export class CmsSettingsComponent implements OnInit {
     whatsapp_number: ['', Validators.required],
   });
 
+  settings: Record<string, string> = {};
+  categoryImageSettings = [
+    { key: 'category_clothes_image_url', label: 'Clothes' },
+    { key: 'category_bags_image_url', label: 'Bags' },
+    { key: 'category_accessories_image_url', label: 'Accessories' },
+  ];
   message = '';
 
   ngOnInit() {
     this.api.getSettings().subscribe(res => {
       const map: Record<string, string> = {};
       res.settings.forEach(s => map[s.key] = s.value);
+      this.settings = map;
       this.form.patchValue({
         exchange_rate: map['exchange_rate'] ?? '',
         whatsapp_number: map['whatsapp_number'] ?? '',
@@ -72,8 +108,32 @@ export class CmsSettingsComponent implements OnInit {
   updateSetting(key: string, value: string) {
     if (!value) return;
     this.api.updateSetting(key, value).subscribe({
-      next: () => { this.message = `${key.replace('_', ' ')} updated`; setTimeout(() => this.message = '', 3000); },
+      next: setting => {
+        this.settings[setting.key] = setting.value;
+        this.message = `${key.replace('_', ' ')} updated`;
+        setTimeout(() => this.message = '', 3000);
+      },
       error: err => { this.message = err.error?.detail ?? 'Update failed'; },
+    });
+  }
+
+  getSettingValue(key: string): string {
+    return this.settings[key] ?? '';
+  }
+
+  uploadImage(event: Event, key: string) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.api.uploadSettingImage(key, file).subscribe({
+      next: setting => {
+        this.settings[setting.key] = setting.value;
+        this.message = 'Image uploaded';
+        input.value = '';
+        setTimeout(() => this.message = '', 3000);
+      },
+      error: err => { this.message = err.error?.detail ?? 'Upload failed'; },
     });
   }
 

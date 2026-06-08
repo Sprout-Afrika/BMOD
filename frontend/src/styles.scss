@@ -35,8 +35,16 @@
     @apply cursor-pointer;
   }
 
+  .product-image-frame {
+    @apply relative overflow-hidden bg-bmod-gray-100;
+  }
+
+  .product-image {
+    @apply block h-full w-full object-cover object-center;
+  }
+
   .product-card img {
-    @apply w-full aspect-[3/4] object-cover transition-opacity duration-200;
+    @apply transition-opacity duration-200;
   }
 
   .product-card:hover img {

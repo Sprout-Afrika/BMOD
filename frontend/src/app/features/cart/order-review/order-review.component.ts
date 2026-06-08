@@ -50,7 +50,9 @@ import { loadCart } from '../../../core/store/cart/cart.actions';
                   @for (item of cart.items; track item.id; let i = $index) {
                     <div class="grid grid-cols-[2rem_4rem_1fr_auto] items-center gap-4 border-b border-bmod-gray-200 py-4 last:border-b-0 sm:grid-cols-[3rem_5rem_1fr_auto]">
                       <span class="text-xs font-semibold tabular-nums text-bmod-gray-400">{{ (i + 1).toString().padStart(2, '0') }}</span>
-                      <img [src]="item.product.images[0]?.url || 'assets/placeholder.webp'" [alt]="item.product.name" class="h-20 w-16 object-cover sm:h-24 sm:w-20" />
+                      <div class="product-image-frame h-20 w-16 sm:h-24 sm:w-20">
+                        <img [src]="item.product.images[0]?.url || 'assets/placeholder.webp'" [alt]="item.product.name" class="product-image" />
+                      </div>
                       <div>
                         <p class="text-sm font-semibold">{{ item.product.name }}</p>
                         <div class="mt-1 flex flex-wrap gap-x-2 text-xs text-bmod-gray-400">

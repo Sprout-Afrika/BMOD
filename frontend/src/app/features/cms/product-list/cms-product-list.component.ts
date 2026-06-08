@@ -39,7 +39,9 @@ import { Product } from '../../../core/models';
                 <tr class="hover:bg-bmod-gray-100">
                   <td class="py-3 pr-4">
                     <div class="flex items-center gap-3">
-                      <img [src]="p.images[0]?.url || 'assets/placeholder.webp'" [alt]="p.name" class="w-10 h-12 object-cover" />
+                      <div class="product-image-frame w-10 h-12 flex-shrink-0">
+                        <img [src]="p.images[0]?.url || 'assets/placeholder.webp'" [alt]="p.name" class="product-image" />
+                      </div>
                       <span class="font-medium">{{ p.name }}</span>
                     </div>
                   </td>
