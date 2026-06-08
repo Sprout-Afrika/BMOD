@@ -14,23 +14,60 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+user_role = postgresql.ENUM("USER", "STAFF", "ADMIN", name="user_role", create_type=False)
+currency_type = postgresql.ENUM("NGN", "USD", name="currency_type", create_type=False)
+product_category = postgresql.ENUM("clothes", "bags", "accessories", name="product_category", create_type=False)
+gender_target = postgresql.ENUM("men", "women", "unisex", name="gender_target", create_type=False)
+
 
 def upgrade() -> None:
     op.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
 
-    op.execute("CREATE TYPE user_role AS ENUM ('USER', 'STAFF', 'ADMIN')")
-    op.execute("CREATE TYPE currency_type AS ENUM ('NGN', 'USD')")
-    op.execute("CREATE TYPE product_category AS ENUM ('clothes', 'bags', 'accessories')")
-    op.execute("CREATE TYPE gender_target AS ENUM ('men', 'women', 'unisex')")
+    op.execute(
+        """
+        DO $$
+        BEGIN
+            CREATE TYPE user_role AS ENUM ('USER', 'STAFF', 'ADMIN');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+        """
+    )
+    op.execute(
+        """
+        DO $$
+        BEGIN
+            CREATE TYPE currency_type AS ENUM ('NGN', 'USD');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+        """
+    )
+    op.execute(
+        """
+        DO $$
+        BEGIN
+            CREATE TYPE product_category AS ENUM ('clothes', 'bags', 'accessories');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+        """
+    )
+    op.execute(
+        """
+        DO $$
+        BEGIN
+            CREATE TYPE gender_target AS ENUM ('men', 'women', 'unisex');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+        """
+    )
 
     op.create_table(
         "users",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("email", sa.String(255), unique=True, nullable=False),
         sa.Column("hashed_password", sa.String(255), nullable=False),
-        sa.Column("role", sa.Enum("USER", "STAFF", "ADMIN", name="user_role"), nullable=False, server_default="USER"),
+        sa.Column("role", user_role, nullable=False, server_default="USER"),
         sa.Column("is_verified", sa.Boolean, nullable=False, server_default="false"),
-        sa.Column("preferred_currency", sa.Enum("NGN", "USD", name="currency_type"), nullable=False, server_default="NGN"),
+        sa.Column("preferred_currency", currency_type, nullable=False, server_default="NGN"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("NOW()")),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
     )
@@ -41,8 +78,8 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("description", sa.Text, nullable=False),
-        sa.Column("category", sa.Enum("clothes", "bags", "accessories", name="product_category"), nullable=False),
-        sa.Column("gender_target", sa.Enum("men", "women", "unisex", name="gender_target"), nullable=False),
+        sa.Column("category", product_category, nullable=False),
+        sa.Column("gender_target", gender_target, nullable=False),
         sa.Column("price_ngn", sa.Numeric(12, 2), nullable=False),
         sa.Column("sizes", postgresql.ARRAY(sa.String(10)), nullable=True),
         sa.Column("is_in_stock", sa.Boolean, nullable=False, server_default="true"),
@@ -99,7 +136,13 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("NOW()")),
     )
 
-    op.execute("INSERT INTO settings (key, value) VALUES ('exchange_rate', '1600'), ('whatsapp_number', '2348012345678')")
+    op.execute(
+        """
+        INSERT INTO settings (key, value)
+        VALUES ('exchange_rate', '1600'), ('whatsapp_number', '2348012345678')
+        ON CONFLICT (key) DO NOTHING
+        """
+    )
 
     op.create_table(
         "audit_log",
