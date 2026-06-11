@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "postgresql+asyncpg://bmod:password@localhost:5432/bmod_db"
+    database_ssl_verify: bool = True
 
     @field_validator("database_url", mode="before")
     @classmethod

@@ -8,6 +8,9 @@ settings = get_settings()
 _connect_args: dict = {}
 if settings.environment == "production":
     _ssl_ctx = ssl.create_default_context()
+    if not settings.database_ssl_verify:
+        _ssl_ctx.check_hostname = False
+        _ssl_ctx.verify_mode = ssl.CERT_NONE
     _connect_args["ssl"] = _ssl_ctx
 
 engine = create_async_engine(
