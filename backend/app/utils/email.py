@@ -7,8 +7,8 @@ settings = get_settings()
 
 
 async def send_email(to: str, subject: str, html_body: str) -> None:
-    if settings.environment == "development" and not settings.smtp_password:
-        print(f"[EMAIL DEV] To: {to} | Subject: {subject}\n{html_body}")
+    if not settings.smtp_password:
+        print(f"[EMAIL SKIPPED] To: {to} | Subject: {subject}\n{html_body}")
         return
 
     message = MIMEMultipart("alternative")
