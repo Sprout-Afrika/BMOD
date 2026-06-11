@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Product, ProductListResponse, Cart, WishlistItem, AuditLogEntry } from '../models';
+import { Product, ProductListResponse, Cart, WishlistItem, AuditLogEntry, IntegrationStatus } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -83,6 +83,10 @@ export class ApiService {
     return this.http.get<{ items: AuditLogEntry[]; total: number; page: number; page_size: number }>(
       `${this.base}/cms/audit-log`, { params: { page, page_size: pageSize } }
     );
+  }
+
+  getIntegrationStatus(): Observable<IntegrationStatus> {
+    return this.http.get<IntegrationStatus>(`${this.base}/cms/integrations/status`);
   }
 
   getStaff(): Observable<unknown[]> {

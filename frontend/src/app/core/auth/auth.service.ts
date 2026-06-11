@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User } from '../models';
 import { setUser, clearUser, setAccessToken } from '../store/auth/auth.actions';
@@ -23,12 +23,10 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/verify-email`, { token });
   }
 
-  login(email: string, password: string): Observable<{ access_token: string }> {
+  login(email: string, password: string): Observable<User> {
     return this.http.post<{ access_token: string }>(`${this.baseUrl}/login`, { email, password }, { withCredentials: true }).pipe(
-      tap(res => {
-        this.store.dispatch(setAccessToken({ token: res.access_token }));
-        this.loadCurrentUser().subscribe();
-      })
+      tap(res => this.store.dispatch(setAccessToken({ token: res.access_token }))),
+      switchMap(() => this.loadCurrentUser())
     );
   }
 

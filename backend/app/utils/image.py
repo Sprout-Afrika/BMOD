@@ -1,5 +1,6 @@
 import io
 import uuid
+import asyncio
 import filetype
 import boto3
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -23,6 +24,20 @@ def _get_s3_client():
         aws_secret_access_key=settings.r2_secret_access_key,
         region_name="auto",
     )
+
+
+async def check_image_storage() -> bool:
+    if not all([
+        settings.r2_endpoint_url,
+        settings.r2_access_key_id,
+        settings.r2_secret_access_key,
+        settings.r2_bucket_name,
+    ]):
+        return False
+
+    s3 = _get_s3_client()
+    await asyncio.to_thread(s3.head_bucket, Bucket=settings.r2_bucket_name)
+    return True
 
 
 async def _read_and_prepare_image(file: UploadFile) -> io.BytesIO:

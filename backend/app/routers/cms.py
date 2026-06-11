@@ -1,7 +1,7 @@
 import uuid
 from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from app.database import get_db
 from app.schemas.cms import AuditLogResponse, AuditLogEntry, StaffUserResponse, CreateStaffRequest
 from app.models.audit import AuditLog
@@ -9,10 +9,56 @@ from app.models.user import User
 from app.services.auth_service import hash_password
 from app.services.audit_service import log_action
 from app.dependencies.auth import require_role
+from app.utils.image import check_image_storage
+from app.utils.redis_client import get_redis
 
 router = APIRouter(prefix="/cms", tags=["cms"])
 
 _require_admin = Depends(require_role("ADMIN"))
+
+
+async def _check_database(db: AsyncSession) -> tuple[str, str | None]:
+    try:
+        await db.execute(text("SELECT 1"))
+        return "ok", None
+    except Exception:
+        return "error", "Database connection failed"
+
+
+async def _check_redis() -> tuple[str, str | None]:
+    try:
+        redis = await get_redis()
+        await redis.ping()
+        return "ok", None
+    except Exception:
+        return "error", "Redis connection failed"
+
+
+async def _check_storage() -> tuple[str, str | None]:
+    try:
+        if await check_image_storage():
+            return "ok", None
+        return "not_configured", "R2 storage settings are incomplete"
+    except Exception:
+        return "error", "R2 storage connection failed"
+
+
+@router.get("/integrations/status")
+async def get_integration_status(
+    current_user: User = _require_admin,
+    db: AsyncSession = Depends(get_db),
+):
+    database_status, database_message = await _check_database(db)
+    redis_status, redis_message = await _check_redis()
+    storage_status, storage_message = await _check_storage()
+
+    return {
+        "services": {
+            "database": {"status": database_status, "message": database_message},
+            "redis": {"status": redis_status, "message": redis_message},
+            "storage": {"status": storage_status, "message": storage_message},
+        }
+    }
 
 
 @router.get("/audit-log", response_model=AuditLogResponse)

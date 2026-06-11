@@ -85,3 +85,10 @@ export interface AuditLogEntry {
   payload: Record<string, unknown> | null;
   created_at: string;
 }
+
+export interface IntegrationStatus {
+  services: Record<string, {
+    status: 'ok' | 'error' | 'not_configured';
+    message: string | null;
+  }>;
+}

@@ -66,9 +66,9 @@ export class LoginComponent {
 
     const { email, password } = this.form.value;
     this.authService.login(email!, password!).subscribe({
-      next: () => {
+      next: user => {
         this.store.dispatch(loadCart());
-        this.router.navigate(['/shop']);
+        this.router.navigate([user.role === 'STAFF' || user.role === 'ADMIN' ? '/cms' : '/shop']);
       },
       error: (err) => {
         this.error = err.error?.detail ?? 'Login failed. Please try again.';
