@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
@@ -11,9 +11,20 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   imports: [CommonModule, RouterLink, ProductCardComponent],
   template: `
     <!-- Hero -->
-    <section class="relative bg-bmod-black text-white min-h-[70vh] flex items-center justify-center overflow-hidden bg-cover bg-center" [style.background-image]="heroBackgroundImage">
-      <div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10"></div>
-      <div class="relative z-20 text-center px-4">
+    <section class="relative bg-bmod-black text-white min-h-[70vh] flex items-center justify-center overflow-hidden bg-cover bg-center" [style.background-image]="mobileHeroBackgroundImage">
+      <div class="absolute inset-0 hidden md:block">
+        @for (url of heroImages; track url; let i = $index) {
+          <img
+            [src]="url"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
+            [class.opacity-100]="i === activeHeroIndex"
+            [class.opacity-0]="i !== activeHeroIndex"
+          />
+        }
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-b from-black/10 via-black/15 to-black/30 z-10"></div>
+      <div class="relative z-20 text-center px-4 drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
         <p class="text-bmod-accent text-xs tracking-[0.4em] uppercase mb-4">New Collection</p>
         <h1 class="font-display text-5xl md:text-7xl font-bold mb-6 leading-tight">
           Define Your<br />Style.
@@ -25,6 +36,19 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           Shop Now
         </a>
       </div>
+      @if (heroImages.length > 1) {
+        <div class="absolute bottom-5 left-1/2 z-20 hidden -translate-x-1/2 gap-2 md:flex">
+          @for (url of heroImages; track url; let i = $index) {
+            <button
+              type="button"
+              (click)="activeHeroIndex = i"
+              class="h-1.5 w-8 bg-white/50 transition-colors"
+              [class.bg-white]="i === activeHeroIndex"
+              [attr.aria-label]="'Show banner ' + (i + 1)">
+            </button>
+          }
+        </div>
+      }
     </section>
 
     <!-- Featured Products -->
@@ -87,12 +111,15 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
     </section>
   `,
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
 
   featuredProducts: Product[] = [];
   loading = true;
   siteSettings: Record<string, string> = {};
+  heroImages: string[] = [];
+  activeHeroIndex = 0;
+  private heroTimer: ReturnType<typeof setInterval> | null = null;
 
   categories = [
     { label: 'Clothes', value: 'clothes' },
@@ -108,16 +135,38 @@ export class HomeComponent implements OnInit {
     this.api.getPublicSettings().subscribe({
       next: res => {
         this.siteSettings = Object.fromEntries(res.settings.map(setting => [setting.key, setting.value]));
+        this.heroImages = this.resolveHeroImages();
+        this.startHeroCarousel();
       },
     });
   }
 
-  get heroBackgroundImage(): string {
-    const url = this.siteSettings['hero_banner_url'];
+  ngOnDestroy() {
+    if (this.heroTimer) clearInterval(this.heroTimer);
+  }
+
+  get mobileHeroBackgroundImage(): string {
+    const url = this.siteSettings['hero_banner_url'] || this.heroImages[0];
     return url ? `url("${url}")` : 'none';
   }
 
   getCategoryImage(category: string): string {
     return this.siteSettings[`category_${category}_image_url`] || 'assets/placeholder.webp';
+  }
+
+  private resolveHeroImages(): string[] {
+    const carousel = [1, 2, 3]
+      .map(position => this.siteSettings[`hero_carousel_image_${position}_url`])
+      .filter(Boolean);
+    return carousel.length ? carousel : [this.siteSettings['hero_banner_url']].filter(Boolean);
+  }
+
+  private startHeroCarousel() {
+    if (this.heroTimer) clearInterval(this.heroTimer);
+    this.activeHeroIndex = 0;
+    if (this.heroImages.length <= 1) return;
+    this.heroTimer = setInterval(() => {
+      this.activeHeroIndex = (this.activeHeroIndex + 1) % this.heroImages.length;
+    }, 5000);
   }
 }

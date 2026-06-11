@@ -14,17 +14,31 @@ _require_admin = Depends(require_role("ADMIN"))
 
 PUBLIC_SETTING_KEYS = {
     "hero_banner_url",
+    "hero_carousel_image_1_url",
+    "hero_carousel_image_2_url",
+    "hero_carousel_image_3_url",
     "category_clothes_image_url",
     "category_bags_image_url",
     "category_accessories_image_url",
+    "footer_image_1_url",
+    "footer_image_2_url",
+    "footer_image_3_url",
 }
 
 SITE_IMAGE_KEYS = {
     "hero_banner_url": "hero-banner",
+    "hero_carousel_image_1_url": "hero-carousel-1",
+    "hero_carousel_image_2_url": "hero-carousel-2",
+    "hero_carousel_image_3_url": "hero-carousel-3",
     "category_clothes_image_url": "category-clothes",
     "category_bags_image_url": "category-bags",
     "category_accessories_image_url": "category-accessories",
+    "footer_image_1_url": "footer-image-1",
+    "footer_image_2_url": "footer-image-2",
+    "footer_image_3_url": "footer-image-3",
 }
+
+SITE_IMAGE_KEY_PATTERN = "^(" + "|".join(SITE_IMAGE_KEYS.keys()) + ")$"
 
 
 @router.get("/exchange-rate", response_model=ExchangeRateResponse)
@@ -68,7 +82,7 @@ async def update_setting_key(
 
 @router.post("/images", response_model=SettingResponse, status_code=status.HTTP_201_CREATED)
 async def upload_setting_image(
-    key: str = Query(pattern="^(hero_banner_url|category_clothes_image_url|category_bags_image_url|category_accessories_image_url)$"),
+    key: str = Query(pattern=SITE_IMAGE_KEY_PATTERN),
     file: UploadFile = File(...),
     current_user: User = _require_admin,
     db: AsyncSession = Depends(get_db),

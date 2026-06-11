@@ -9,7 +9,7 @@ import { ApiService } from '../../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
-    <div class="max-w-2xl mx-auto px-4 py-10">
+    <div class="max-w-4xl mx-auto px-4 py-10">
       <div class="flex items-center gap-4 mb-8">
         <a routerLink="/cms" class="text-bmod-gray-400 hover:text-bmod-black">← CMS</a>
         <h1 class="font-display text-2xl font-bold">Settings</h1>
@@ -45,20 +45,56 @@ import { ApiService } from '../../../core/services/api.service';
         </div>
 
         <div class="border border-bmod-gray-200 p-6">
-          <h2 class="font-semibold mb-4">Homepage Banner</h2>
-          <div class="product-image-frame aspect-[16/7] mb-4">
-            <img [src]="getSettingValue('hero_banner_url') || 'assets/placeholder.webp'" alt="Homepage banner preview" class="product-image" />
+          <h2 class="font-semibold mb-4">Homepage Hero</h2>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            @for (item of heroCarouselSettings; track item.key) {
+              <div>
+                <p class="mb-2 text-xs uppercase tracking-widest text-bmod-gray-400">{{ item.label }}</p>
+                <div class="product-image-frame aspect-[16/10] mb-3">
+                  <img [src]="getSettingValue(item.key) || 'assets/placeholder.webp'" [alt]="item.label + ' preview'" class="product-image" />
+                </div>
+                <label class="text-xs underline cursor-pointer">
+                  Upload
+                  <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" (change)="uploadImage($event, item.key)" />
+                </label>
+              </div>
+            }
           </div>
-          <label class="btn-outline inline-block cursor-pointer">
-            Upload Banner
-            <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" (change)="uploadImage($event, 'hero_banner_url')" />
-          </label>
+          <div class="mt-5 border-t border-bmod-gray-200 pt-5">
+            <p class="mb-2 text-xs uppercase tracking-widest text-bmod-gray-400">Mobile Banner Fallback</p>
+            <div class="product-image-frame aspect-[16/9] mb-3">
+              <img [src]="getSettingValue('hero_banner_url') || 'assets/placeholder.webp'" alt="Mobile banner fallback preview" class="product-image" />
+            </div>
+            <label class="btn-outline inline-block cursor-pointer">
+              Upload Mobile Banner
+              <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" (change)="uploadImage($event, 'hero_banner_url')" />
+            </label>
+          </div>
+          <p class="text-xs text-bmod-gray-400 mt-3">Carousel images rotate on tablet and desktop only. Mobile uses the fallback banner.</p>
         </div>
 
         <div class="border border-bmod-gray-200 p-6">
           <h2 class="font-semibold mb-4">Category Images</h2>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             @for (item of categoryImageSettings; track item.key) {
+              <div>
+                <p class="mb-2 text-xs uppercase tracking-widest text-bmod-gray-400">{{ item.label }}</p>
+                <div class="product-image-frame aspect-[4/3] mb-3">
+                  <img [src]="getSettingValue(item.key) || 'assets/placeholder.webp'" [alt]="item.label + ' preview'" class="product-image" />
+                </div>
+                <label class="text-xs underline cursor-pointer">
+                  Upload
+                  <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" (change)="uploadImage($event, item.key)" />
+                </label>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="border border-bmod-gray-200 p-6">
+          <h2 class="font-semibold mb-4">Footer Images</h2>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            @for (item of footerImageSettings; track item.key) {
               <div>
                 <p class="mb-2 text-xs uppercase tracking-widest text-bmod-gray-400">{{ item.label }}</p>
                 <div class="product-image-frame aspect-[4/3] mb-3">
@@ -86,10 +122,20 @@ export class CmsSettingsComponent implements OnInit {
   });
 
   settings: Record<string, string> = {};
+  heroCarouselSettings = [
+    { key: 'hero_carousel_image_1_url', label: 'Hero 01' },
+    { key: 'hero_carousel_image_2_url', label: 'Hero 02' },
+    { key: 'hero_carousel_image_3_url', label: 'Hero 03' },
+  ];
   categoryImageSettings = [
     { key: 'category_clothes_image_url', label: 'Clothes' },
     { key: 'category_bags_image_url', label: 'Bags' },
     { key: 'category_accessories_image_url', label: 'Accessories' },
+  ];
+  footerImageSettings = [
+    { key: 'footer_image_1_url', label: 'Footer 01' },
+    { key: 'footer_image_2_url', label: 'Footer 02' },
+    { key: 'footer_image_3_url', label: 'Footer 03' },
   ];
   message = '';
 
@@ -125,6 +171,18 @@ export class CmsSettingsComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      this.message = 'Only JPG, PNG, and WebP images are accepted';
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.message = 'Image must be 5 MB or smaller';
+      input.value = '';
+      return;
+    }
 
     this.api.uploadSettingImage(key, file).subscribe({
       next: setting => {
