@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse, HttpClient } from '@angular/common/http';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, switchMap, catchError, throwError, take, filter, EMPTY } from 'rxjs';
+import { BehaviorSubject, switchMap, catchError, throwError, take, filter } from 'rxjs';
 import { selectAccessToken } from '../store/auth/auth.selectors';
 import { setAccessToken, clearUser } from '../store/auth/auth.actions';
 import { Router } from '@angular/router';
@@ -14,6 +14,15 @@ const newToken$ = new BehaviorSubject<string | null>(null);
 const addToken = (req: HttpRequest<unknown>, token: string) =>
   req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
 
+const isPublicAuthRequest = (url: string) =>
+  [
+    '/auth/login',
+    '/auth/register',
+    '/auth/verify-email',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+  ].some(path => url.includes(path));
+
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
   const store = inject(Store);
   const router = inject(Router);
@@ -22,6 +31,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   if (!req.url.startsWith(environment.apiUrl)) return next(req);
   // Never intercept the refresh call itself to avoid infinite loop
   if (req.url.includes('/auth/refresh')) return next(req);
+  if (isPublicAuthRequest(req.url)) return next(req);
 
   return store.select(selectAccessToken).pipe(
     take(1),
