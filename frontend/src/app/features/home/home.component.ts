@@ -11,7 +11,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   imports: [CommonModule, RouterLink, ProductCardComponent],
   template: `
     <!-- Hero -->
-    <section class="relative bg-bmod-black text-white min-h-[78vh] overflow-hidden bg-cover bg-center md:min-h-[calc(100vh-4rem)]" [style.background-image]="mobileHeroBackgroundImage">
+    <section class="relative bg-bmod-black text-white min-h-[70vh] overflow-hidden bg-cover bg-center md:min-h-[70vh]" [style.background-image]="mobileHeroBackgroundImage">
       <div class="absolute inset-0 hidden md:block">
         @for (url of heroImages; track url; let i = $index) {
           <img
@@ -23,30 +23,29 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           />
         }
       </div>
-      <div class="absolute inset-0 z-10 bg-gradient-to-r from-black/45 via-black/10 to-black/5 md:from-black/35 md:via-black/8 md:to-transparent"></div>
-      <div class="absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-black/35 to-transparent"></div>
+      <div class="absolute inset-0 z-10 bg-gradient-to-b from-black/8 via-black/12 to-black/24"></div>
 
-      <div class="relative z-20 flex min-h-[78vh] items-end px-4 pb-10 pt-24 md:min-h-[calc(100vh-4rem)] md:items-center md:px-10 md:pb-0 lg:px-16">
-        <div class="max-w-md border-l border-white/70 pl-5 drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] md:max-w-lg">
+      <div class="relative z-20 flex min-h-[70vh] items-center justify-center px-4 text-center drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+        <div class="max-w-xl">
           <p class="mb-4 text-xs uppercase tracking-[0.45em] text-bmod-accent">New Collection</p>
-          <h1 class="font-display text-4xl font-bold leading-none md:text-6xl lg:text-7xl">
-            Define Your Style.
+          <h1 class="font-display text-5xl font-bold leading-tight md:text-7xl">
+            Define Your<br />Style.
           </h1>
-          <p class="mt-5 max-w-sm text-sm leading-6 text-white/78 md:text-base">
+          <p class="mx-auto mt-5 max-w-md text-base leading-6 text-white/78 md:text-lg">
             Curated fashion for the bold. Clothes, bags, and accessories.
           </p>
-          <a routerLink="/shop" class="btn-primary mt-7 inline-block border border-white hover:border-bmod-accent">
+          <a routerLink="/shop" class="btn-primary mt-8 inline-block border border-white hover:border-bmod-accent">
             Shop Now
           </a>
         </div>
       </div>
 
       @if (heroImages.length > 1) {
-        <div class="absolute bottom-8 right-8 z-20 hidden items-center gap-4 md:flex">
+        <div class="absolute bottom-5 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 md:flex">
           <button
             type="button"
             (click)="previousHero()"
-            class="flex h-11 w-14 items-center justify-center border border-white/60 bg-black/20 text-xs font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-bmod-black"
+            class="flex h-8 w-12 items-center justify-center border border-white/60 bg-black/20 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-bmod-black"
             aria-label="Previous banner">
             Prev
           </button>
@@ -54,7 +53,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             <button
               type="button"
               (click)="activeHeroIndex = i"
-              class="h-11 min-w-11 border border-white/30 px-3 text-xs font-semibold tabular-nums text-white/70 transition-colors hover:border-white hover:text-white"
+              class="h-8 min-w-8 border border-white/30 px-2 text-[10px] font-semibold tabular-nums text-white/70 transition-colors hover:border-white hover:text-white"
               [class.bg-white]="i === activeHeroIndex"
               [class.text-bmod-black]="i === activeHeroIndex"
               [attr.aria-label]="'Show banner ' + (i + 1)">
@@ -64,7 +63,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           <button
             type="button"
             (click)="nextHero()"
-            class="flex h-11 w-14 items-center justify-center border border-white/60 bg-black/20 text-xs font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-bmod-black"
+            class="flex h-8 w-12 items-center justify-center border border-white/60 bg-black/20 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-bmod-black"
             aria-label="Next banner">
             Next
           </button>
