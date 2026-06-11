@@ -12,6 +12,7 @@ if settings.environment == "production":
         _ssl_ctx.check_hostname = False
         _ssl_ctx.verify_mode = ssl.CERT_NONE
     _connect_args["ssl"] = _ssl_ctx
+    _connect_args["statement_cache_size"] = 0
 
 engine = create_async_engine(
     settings.database_url,
