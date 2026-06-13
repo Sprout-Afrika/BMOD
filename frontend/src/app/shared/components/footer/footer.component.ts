@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 
@@ -10,13 +10,35 @@ import { ApiService } from '../../../core/services/api.service';
   template: `
     <footer class="border-t border-bmod-gray-200 bg-bmod-white">
       @if (footerImages.length) {
-        <div class="grid grid-cols-3 border-b border-bmod-gray-200">
+        <section class="relative h-64 overflow-hidden border-b border-bmod-gray-200 bg-bmod-black md:h-80 lg:h-96">
           @for (image of footerImages; track image; let i = $index) {
-            <div class="product-image-frame aspect-[4/3] border-r border-bmod-gray-200 last:border-r-0">
-              <img [src]="image" [alt]="'BMOD footer image ' + (i + 1)" class="product-image" loading="lazy" />
+            <img
+              [src]="image"
+              [alt]="'BMOD footer banner ' + (i + 1)"
+              class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
+              [class.opacity-100]="i === activeFooterIndex"
+              [class.opacity-0]="i !== activeFooterIndex"
+              [attr.aria-hidden]="i !== activeFooterIndex"
+              loading="lazy"
+            />
+          }
+          <div class="absolute inset-0 bg-black/15"></div>
+
+          @if (footerImages.length > 1) {
+            <div class="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-2" aria-label="Footer banner slides">
+              @for (image of footerImages; track image; let i = $index) {
+                <button
+                  type="button"
+                  class="h-1 w-10 bg-white/45 transition-colors hover:bg-white"
+                  [class.bg-white]="i === activeFooterIndex"
+                  [attr.aria-label]="'Show footer banner ' + (i + 1)"
+                  [attr.aria-current]="i === activeFooterIndex ? 'true' : null"
+                  (click)="showFooterImage(i)"
+                ></button>
+              }
             </div>
           }
-        </div>
+        </section>
       }
 
       <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 md:flex-row md:items-end md:justify-between">
@@ -35,10 +57,12 @@ import { ApiService } from '../../../core/services/api.service';
     </footer>
   `,
 })
-export class FooterComponent implements OnInit {
+export class FooterComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private carouselTimer?: ReturnType<typeof setInterval>;
 
   footerImages: string[] = [];
+  activeFooterIndex = 0;
 
   ngOnInit() {
     this.api.getPublicSettings().subscribe({
@@ -47,7 +71,30 @@ export class FooterComponent implements OnInit {
         this.footerImages = [1, 2, 3]
           .map(position => settings[`footer_image_${position}_url`])
           .filter(Boolean);
+        this.startCarousel();
       },
     });
+  }
+
+  ngOnDestroy() {
+    this.stopCarousel();
+  }
+
+  showFooterImage(index: number) {
+    this.activeFooterIndex = index;
+    this.startCarousel();
+  }
+
+  private startCarousel() {
+    this.stopCarousel();
+    if (this.footerImages.length < 2) return;
+
+    this.carouselTimer = setInterval(() => {
+      this.activeFooterIndex = (this.activeFooterIndex + 1) % this.footerImages.length;
+    }, 5000);
+  }
+
+  private stopCarousel() {
+    if (this.carouselTimer) clearInterval(this.carouselTimer);
   }
 }
