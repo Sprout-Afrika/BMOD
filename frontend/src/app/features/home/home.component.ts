@@ -120,15 +120,6 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="py-20 bg-bmod-black text-white text-center px-4">
-      <p class="text-bmod-accent text-xs tracking-[0.4em] uppercase mb-4">Order via WhatsApp</p>
-      <h2 class="font-display text-4xl font-bold mb-4">Simple Checkout.<br />Direct Connection.</h2>
-      <p class="text-white/60 max-w-md mx-auto mb-8">Add items to your cart, review your order, and complete your purchase on WhatsApp. No fuss.</p>
-      <a routerLink="/shop" class="btn-primary border border-white hover:border-bmod-accent inline-block">
-        Start Shopping
-      </a>
-    </section>
   `,
 })
 export class HomeComponent implements OnInit, OnDestroy {
